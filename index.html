@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Segmentation</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Add the Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        /* Add some custom styles */
+        body {
+            /* Replace 'YOUR_IMAGE_URL' with the URL of your image */
+            background: url('https://i.postimg.cc/NfMxST3x/Background-Image.jpg') no-repeat center center fixed; 
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            color: #333; /* Dark grey text for a modern look */
+            background: rgba(255, 255, 255, 0.8); /* Semi-transparent white background for the container */
+            padding: 20px;
+            border-radius: 10px;
+        }
+        h1 {
+            color: #000080; /* Dark blue heading for a professional look */
+        }
+        .custom-file-label::after {
+            content: "Browse";
+        }
+        .btn-primary, .btn-success {
+            background-color: #007bff; /* Blue buttons for a modern look */
+            border-color: #007bff;
+        }
+        .alert-success {
+            background-color: #d4edda; /* Light green success alert for a modern look */
+        }
+        .alert-info {
+            background-color: #d1ecf1; /* Light blue info alert for a modern look */
+        }
+        table {
+            box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Add a subtle shadow to the table */
+        }
+        .form-row > div {
+            padding: 0 10px 0 10px;
+        }
+    </style>
+    <script>
+        // Add this script to display the file name after a file is selected
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('.custom-file-input').addEventListener('change', function(e) {
+                var fileName = e.target.files[0].name;
+                var nextSibling = e.target.nextElementSibling
+                nextSibling.innerText = fileName
+            })
+            // Initialize Select2
+            $('#features').select2();
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center my-4">Customer Segmentation</h1>
+        <form action="/upload" method="post" enctype="multipart/form-data" class="mb-4">
+            <div class="custom-file">
+                <input type="file" class="custom-file-input" id="customFile" name="file">
+                <label class="custom-file-label" for="customFile">Choose file</label>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block mt-4">Upload</button>
+        </form>
+        {% if filename %}
+            <div class="alert alert-success" role="alert">
+                Uploaded file: {{ filename }}
+            </div>
+            <form action="/segment/{{ filename }}" method="post">
+                <div class="form-row">
+                    <div class="form-group col-md-9">
+                        <label for="features">Select Features:</label>
+                        <select multiple class="form-control" id="features" name="features">
+                            {% for column in columns %}
+                                <option value="{{ column }}">{{ column }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="n_clusters">No of Clusters:</label>
+                        <select class="form-control" id="n_clusters" name="n_clusters">
+                            {% for i in range(2, 11) %}
+                                <option value="{{ i }}">{{ i }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Start Segmentation</button>
+            </form>
+        {% endif %}
+        {% if segmented %}
+            <div class="alert alert-info" role="alert">
+                The customer segmentation has been completed successfully! The customers have been divided into {{ n_clusters }} clusters based on the selected features. This segmentation can help us understand our customers better and tailor our services to meet their needs.
+            </div>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th scope="col">Cluster</th>
+                        <th scope="col">Download</th>
+                        <th scope="col">View</th>
+                        <th scope="col">Send Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for i in range(1, n_clusters+1) %}
+                    <tr>
+                        <th scope="row">Cluster {{ i }}</th>
+                        <td><a href="/download/{{ i-1 }}" class="btn btn-primary">Download</a></td>
+                        <td><a href="/view/{{ i-1 }}" class="btn btn-primary">View</a></td>
+                        <td><a href="/send_email/{{ i-1 }}" class="btn btn-primary">Send Email</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+    <!-- Add the Select2 and jQuery JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+</body>
+</html>
